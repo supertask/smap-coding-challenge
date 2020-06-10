@@ -118,4 +118,17 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.11/howto/static-files/
 
-STATIC_URL = '/static/'
+STATIC_URL = '/assets/'
+
+#
+# Exit status
+#
+EXIT_SUCCESS = 0
+EXIT_FAILURE = 1
+
+#
+# Consumption settings
+#
+USER_CSV_PATH = '../data/user_data.csv'
+ELECTRICITY_CONSUMPTION_CSV_DIR = '../data/consumption/'
+CSV_DATETIME_FORMAT = '%Y-%m-%d %H:%M:%S'
