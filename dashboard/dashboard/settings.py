@@ -120,6 +120,7 @@ USE_TZ = True
 
 STATIC_URL = '/assets/'
 
+
 #
 # Exit status
 #
@@ -129,6 +130,8 @@ EXIT_FAILURE = 1
 #
 # Consumption settings
 #
-USER_CSV_PATH = '../data/user_data.csv'
-ELECTRICITY_CONSUMPTION_CSV_DIR = '../data/consumption/'
+USER_CSV_PATH = os.path.join(BASE_DIR, '../data/user_data.csv')
+ELECTRICITY_CONSUMPTION_CSV_DIR = os.path.join(BASE_DIR, '../data/consumption/')
 CSV_DATETIME_FORMAT = '%Y-%m-%d %H:%M:%S'
+
+ESTIMATED_NUM_OF_USERS = 10 ** 10 # NOTE(Tasuku): Considering around 9 billion people use in 2050
