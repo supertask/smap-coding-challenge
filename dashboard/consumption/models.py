@@ -5,14 +5,10 @@ from django.db import models
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.conf import settings
 
-#NOTE: https://qiita.com/okoppe8/items/a1149b2be54441951de1
-#NOTE: https://qiita.com/pirorirori_n712/items/b47ade3fdaf8b4a109ba
-#NOTE: Database access optimization, https://docs.djangoproject.com/en/3.0/topics/db/optimization/
-#NOTE: Filter, https://medium.com/@hakibenita/9-django-tips-for-working-with-databases-beba787ed7d3
-
 class User(models.Model):
     """This table is imported from data/user_data.csv, basically."""
 
+    #NOTE: Database access optimization, https://docs.djangoproject.com/en/3.0/topics/db/optimization/
     user_id = models.BigIntegerField(primary_key=True, db_index=True,
         validators=[MinValueValidator(0), MaxValueValidator(settings.ESTIMATED_NUM_OF_USERS)]) 
     area = models.CharField(max_length=4) #NOTE(Tasuku): Under num of cities in the world
@@ -25,7 +21,7 @@ class User(models.Model):
 class ElectricityConsumption(models.Model):
     """This table is imported from data/consumption/<user_id>.csv, basically."""
 
-    datetime = models.DateField(unique=True)
+    datetime = models.DateField()
     consumption = models.DecimalField(max_digits=8, decimal_places=1) #TODO(Tasuku): Consider a max consumption for 'rich' family
     user = models.ForeignKey(User, on_delete=models.CASCADE)
 
@@ -36,8 +32,9 @@ class ElectricityConsumption(models.Model):
 
 class ElectricityConsumptionAggregation(models.Model):
     """This table has total and average consumptions which will be calc"""
-    total_consumption = models.DecimalField(max_digits=8 * settings.ESTIMATED_NUM_OF_USERS, decimal_places=1)
-    average_consumption = models.DecimalField(max_digits=8, decimal_places=1)
+    date = models.DateField()
+    date_total = models.DecimalField(max_digits=8 * settings.ESTIMATED_NUM_OF_USERS, decimal_places=1)
+    date_average = models.DecimalField(max_digits=8, decimal_places=1)
 
     def __str__(self):
         pass #TODO

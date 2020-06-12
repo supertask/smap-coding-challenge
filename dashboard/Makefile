@@ -3,17 +3,20 @@ TARGET=python manage.py
 MIGRATIONS_ID=consumption
 IMPORTING_CSV=../data/
 
+import:
+	${TARGET} import
+
+init: make_migrate migrate
+
 migrate:
 	${TARGET} migrate ${MIGRATIONS_ID}
-
-reset_migrate:
-	${TARGET} migrate ${MIGRATIONS_ID} zero
 
 make_migrate:
 	${TARGET} makemigrations
 
-show_migrate:
-	${TARGET} migrate showmigrations
+reset_migrate:
+	${TARGET} migrate ${MIGRATIONS_ID} zero
 
-import:
-	${TARGET} import
+show_migrate:
+	${TARGET} showmigrations
+
