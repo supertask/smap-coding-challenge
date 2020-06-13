@@ -6,7 +6,9 @@ IMPORTING_CSV=../data/
 import:
 	${TARGET} import
 
+#Short commands
 init: make_migrate migrate
+zero: reset_migrate
 
 migrate:
 	${TARGET} migrate ${MIGRATIONS_ID}
