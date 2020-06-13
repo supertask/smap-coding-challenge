@@ -42,5 +42,5 @@ class ElectricityConsumptionDayAggregation(models.Model):
     day_average = models.DecimalField(max_digits=14, decimal_places=10) #NOTE: e.g. 9999.9999999999
 
     def __str__(self):
-        return "(day:{0}, day_total:{1}, day_average:{2})".format(self.day, self.day_total, day_average)
+        return "(day:{0}, day_total:{1}, day_average:{2})".format(self.day, self.day_total, self.day_average)
 

@@ -2,6 +2,8 @@
 TARGET=python manage.py
 MIGRATIONS_ID=consumption
 IMPORTING_CSV=../data/
+HOST=localhost
+PORT=10000
 
 import:
 	${TARGET} import
@@ -22,3 +24,5 @@ reset_migrate:
 show_migrate:
 	${TARGET} showmigrations
 
+server:
+	${TARGET} runserver ${HOST}:${PORT}

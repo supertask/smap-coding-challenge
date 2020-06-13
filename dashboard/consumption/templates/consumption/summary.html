@@ -1,7 +1,75 @@
 {% extends 'consumption/layout.html' %}
 
 {% block content %}
+<div class="container">
+  <h1>Aggregation of electricity consumption</h1>
+  <div class="row">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-body">
+          <canvas id="myBarChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>     
+</div>
+{% endblock %}
 
-<h1>{{message}}</h1>
+{% block custom_script %}
+<script>
+    var config = {
+      type: 'line',
+      data: {
+        datasets: [{
+          label: 'Total electricity consumption',
+          data: [],
+          backgroundColor: 'rgba(255, 99, 132, 0.2)',
+          borderColor: 'rgba(255,99,132,1)',
+          borderWidth: 1
+        }]
+      },
+      options: {
+        scales: {
+          xAxes: [{
+            type: 'time',
+            position: 'bottom',
+            displayFormats: {
+              'day': 'MMM DD'
+            }
+          }],
+          yAxes: [{
+            ticks: {
+              callback: function(value) {
+                return ((value % 10) == 0)? value : ''
+              },
+              min: 0,
+              max: 3000000,
+              stepSize: 500000
+            }
+          }]
+        }
+      }
+    };
 
+    var consumptions = JSON.parse('{{ consumptions|safe }}');
+    var day_consumption_totals = consumptions['day_totals'].map(function(consumption, index) {
+      return {
+        x: new Date(consumption['day']),
+        y: parseFloat(consumption['day_total'])
+      };
+    });
+    config.data.datasets[0].data = day_consumption_totals;
+
+    var chart = new Chart($("#myBarChart"), config);
+    chart.update();
+    /*
+    var day_consumption_averages = $.map(consumptions['day_averages'], function(consumption, index) {
+      return {
+        //x: new Date(consumption['day']),
+        x: consumption['day'],
+        y: parseFloat(consumption['day_average'])
+      };
+    });
+    */
+</script>
 {% endblock %}

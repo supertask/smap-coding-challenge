@@ -62,7 +62,7 @@ class Command(BaseCommand):
             print('ERROR: the filename "%s" does not exist.' % settings.USER_CSV_PATH, file=sys.stderr)
             sys.exit(settings.EXIT_FAILURE)
 
-        data_frame = pd.read_csv(settings.USER_CSV_PATH, sep=settings.CSV_SETTING['SEPARATION_CHAR'])
+        data_frame = pd.read_csv(settings.USER_CSV_PATH, sep=settings.CSV_SEPARATION_CHAR)
         User.objects.bulk_create(
             [
                 User(user_id=int(row['id']), area=row['area'], tariff=row['tariff'])
@@ -82,7 +82,7 @@ class Command(BaseCommand):
             e_consumptions = [
                 ElectricityConsumption(
                     datetime = pytz.utc.localize(
-                        datetime.strptime(row['datetime'], settings.CSV_SETTING['COMSUMPTION']['DATETIME_FORMAT'])
+                        datetime.strptime(row['datetime'], settings.CSV_DATETIME_FORMAT)
                     ),
                     consumption = Decimal(row['consumption']), user_id = int(row['user_id'])
                 )
@@ -94,7 +94,7 @@ class Command(BaseCommand):
         """Calc and put total and average electricity consumption into DB."""
 
         #
-        # OPTIMIZE(Tasuku): Consider RAM when num of users are increased
+        # OPTIMIZE(Tasuku): Consider multiprocessing and RAM when num of users is increased
         #
         # NOTE(Tasuku): a statement on SQLite
         # SELECT day, SUM(consumption), AVG(consumption) FROM(

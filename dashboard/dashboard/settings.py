@@ -133,19 +133,8 @@ EXIT_FAILURE = 1
 USER_CSV_PATH = os.path.join(BASE_DIR, '../data/user_data.csv')
 ELECTRICITY_CONSUMPTION_CSV_DIR = os.path.join(BASE_DIR, '../data/consumption/')
 
-CSV_SETTING = {
-    'SEPARATION_CHAR': ',',
-    'COMSUMPTION': {
-        'DATETIME_FORMAT': '%Y-%m-%d %H:%M:%S',
-        'RECORD_PER_DAY': 48,
-        'INTEGER_PART_LEN ': 4,
-        'DECIMAL_PART_LEN ': 1,
-    }
-}
-#CSV_SEPARATION_CHAR = ','
-#CSV_DATETIME_FORMAT = '%Y-%m-%d %H:%M:%S'
+CSV_SEPARATION_CHAR = ','
+CSV_DATETIME_FORMAT = '%Y-%m-%d %H:%M:%S'
 COMSUMPTION_RECORD_PER_DAY = 48
-#COMSUMPTION_INTEGER_PART_LEN = 4
-#COMSUMPTION_INTEGER_PART_LEN = 4
 
 ESTIMATED_NUM_OF_USERS = 10 ** 10 # NOTE(Tasuku): Considering around 9 billion people use in 2050
