@@ -1,6 +1,6 @@
 
 TARGET=python manage.py
-MIGRATIONS_ID=consumption
+APP_NAME=consumption
 IMPORTING_CSV=../data/
 HOST=localhost
 PORT=10000
@@ -13,16 +13,19 @@ init: make_migrate migrate
 zero: reset_migrate
 
 migrate:
-	${TARGET} migrate ${MIGRATIONS_ID}
+	${TARGET} migrate ${APP_NAME}
 
 make_migrate:
 	${TARGET} makemigrations
 
 reset_migrate:
-	${TARGET} migrate ${MIGRATIONS_ID} zero
+	${TARGET} migrate ${APP_NAME} zero
 
 show_migrate:
 	${TARGET} showmigrations
 
 server:
 	${TARGET} runserver ${HOST}:${PORT}
+
+test:
+	${TARGET} test ${APP_NAME}
