@@ -7,10 +7,10 @@
 
   <div class="row">
     <div class="col-md-6">
-        <canvas id="chart1"></canvas>
+        <canvas id="total_consumption_chart"></canvas>
     </div>
     <div class="col-md-6">
-        <canvas id="chart2"></canvas>
+        <canvas id="average_consumption_chart"></canvas>
     </div>
   </div>
 
@@ -45,11 +45,13 @@
 {% endblock %}
 
 {% block custom_script %}
-<script src="{% static 'js/base_chart_settings.js' %}"></script>
-<script src="{% static 'js/summary_charts.js' %}"></script>
+<script src="{% static 'js/base_line_chart_settings.js' %}"></script>
 <script>
     var total_consumptions = JSON.parse('{{ total_consumptions|safe }}');
     var average_consumptions = JSON.parse('{{ average_consumptions|safe }}');
-    show_summary_charts(total_consumptions, average_consumptions);
+    create_chart(total_consumptions, $("#total_consumption_chart"), is_total=true,
+        color='229, 106, 167', label = 'Total electricity consumption' );
+    create_chart(average_consumptions, $("#average_consumption_chart"), is_total=false,
+        color='135, 206, 251', label = 'Average electricity consumption' );
 </script>
 {% endblock %}

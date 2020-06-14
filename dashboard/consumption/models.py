@@ -9,15 +9,16 @@ from django.core.validators import MaxValueValidator
 from django.core.validators import MinValueValidator
 from django.conf import settings
 from django.db.models.functions import TruncDay
-from django.db.models import Avg, Sum
+from django.db.models import Avg
+from django.db.models import Sum
 
 class User(models.Model):
     """This table is imported from data/user_data.csv, basically."""
 
-    #NOTE: Database access optimization, https://docs.djangoproject.com/en/3.0/topics/db/optimization/
+    # NOTE: Database access optimization, https://docs.djangoproject.com/en/3.0/topics/db/optimization/
     user_id = models.BigIntegerField(primary_key=True, db_index=True,
         validators=[MinValueValidator(0), MaxValueValidator(settings.ESTIMATED_NUM_OF_USERS)]) 
-    area = models.CharField(max_length=4) #NOTE(Tasuku): Under num of cities in the world
+    area = models.CharField(max_length=4) # NOTE(Tasuku): Under num of cities in the world
     tariff = models.CharField(max_length=4)
 
     def __str__(self):
@@ -29,8 +30,8 @@ class ElectricityConsumption(models.Model):
     datetime = models.DateTimeField()
     user = models.ForeignKey(User, on_delete=models.CASCADE)
 
-    #NOTE(Tasuku): Considering a max consumption for 'rich' family
-    consumption = models.DecimalField(max_digits=5, decimal_places=1) #NOTE: e.g. 9999.9
+    # NOTE(Tasuku): Considering a max consumption for 'rich' family
+    consumption = models.DecimalField(max_digits=5, decimal_places=1) # NOTE: e.g. 9999.9
 
     def __str__(self):
         return "(datetime:{0}, consumption:{1}, {2})".format(
@@ -43,8 +44,8 @@ class UserEConsumptionDayAggregation(models.Model):
     day = models.DateField()
     day_total = models.DecimalField(
         max_digits= 5 + math.ceil(math.log10(settings.COMSUMPTION_RECORD_PER_DAY)),
-        decimal_places = 1) #NOTE: e.g. 999999.9
-    day_average = models.DecimalField(max_digits=14, decimal_places=10) #NOTE: e.g. 9999.9999999999
+        decimal_places = 1) # NOTE: e.g. 999999.9
+    day_average = models.DecimalField(max_digits=14, decimal_places=10) # NOTE: e.g. 9999.9999999999
 
     @classmethod
     def calc_consumptions(self):
@@ -76,8 +77,8 @@ class EConsumptionDayAggregation(models.Model):
     day = models.DateField()
     day_total = models.DecimalField(
         max_digits= 5 + math.ceil(math.log10(settings.ESTIMATED_NUM_OF_USERS * settings.COMSUMPTION_RECORD_PER_DAY)),
-        decimal_places = 1) #NOTE: e.g. 9999999999999999.9
-    day_average = models.DecimalField(max_digits=14, decimal_places=10) #NOTE: e.g. 9999.9999999999
+        decimal_places = 1) # NOTE: e.g. 9999999999999999.9
+    day_average = models.DecimalField(max_digits=14, decimal_places=10) # NOTE: e.g. 9999.9999999999
 
     @classmethod
     def calc_consumptions(self):

@@ -2,6 +2,7 @@
 from __future__ import unicode_literals
 
 import json
+from decimal import Decimal
 
 from django.shortcuts import render
 from django.forms.models import model_to_dict
@@ -12,10 +13,6 @@ from consumption.models import EConsumptionDayAggregation
 from consumption.models import UserEConsumptionDayAggregation
 
 def summary(request):
-    from django.conf import settings
-
-    #NOTE: https://qiita.com/kytiken/items/6f22b538ef67b9ea6f1e
-
     return render(request, 'consumption/summary.html', {
         'total_consumptions': json.dumps(
             list(EConsumptionDayAggregation.objects.values('day', 'day_total')),
@@ -26,7 +23,7 @@ def summary(request):
             cls=DjangoJSONEncoder
         ),
         'header': ['Index', 'Area', 'Tariff', 'Action'],
-        'users': list(User.objects.values('area', 'tariff', 'user_id')),
+        'users': list(User.objects.values('area', 'tariff', 'user_id'))
     })
 
 

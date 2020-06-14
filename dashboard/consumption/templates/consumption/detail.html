@@ -3,7 +3,6 @@
 {% load static %}
 
 {% block content %}
-
 <h1>User {{ user.user_id }} !</h1>
 <div class="card m-3 mb-5">
   <div class="card-body">
@@ -22,16 +21,17 @@
     </div>
   </div>
 </div>
-
 {% endblock %}
 
 
 {% block custom_script %}
-<script src="{% static 'js/base_chart_settings.js' %}"></script>
-<script src="{% static 'js/user_consumption_charts.js' %}"></script>
+<script src="{% static 'js/base_line_chart_settings.js' %}"></script>
 <script>
   var user_total_consumptions = JSON.parse('{{ user_total_consumptions|safe }}');
   var user_average_consumptions = JSON.parse('{{ user_average_consumptions|safe }}');
-  show_user_consumption_charts(user_total_consumptions, user_average_consumptions);
+  create_chart(user_total_consumptions, $("#user_total_consumption_chart"), is_total=true,
+      color='229, 106, 167', label = 'Total electricity consumption' );
+  create_chart(user_average_consumptions, $("#user_average_consumption_chart"), is_total=false,
+      color='135, 206, 251', label = 'Average electricity consumption' );
 </script>
 {% endblock %}
