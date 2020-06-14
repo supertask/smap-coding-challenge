@@ -1,5 +1,37 @@
+
 {% extends 'consumption/layout.html' %}
+{% load static %}
 
 {% block content %}
 
+<h1>User {{ user.user_id }} !</h1>
+<div class="card m-3 mb-5">
+  <div class="card-body">
+    Your area is "{{ user.area }}". and your tariff is "{{ user.tariff }}".
+  </div>
+</div>
+
+<h2>Aggregation of electricity consumption you used</h2>
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-md-6">
+        <canvas id="user_total_consumption_chart"></canvas>
+    </div>
+    <div class="col-md-6">
+        <canvas id="user_average_consumption_chart"></canvas>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+
+{% block custom_script %}
+<script src="{% static 'js/base_chart_settings.js' %}"></script>
+<script src="{% static 'js/user_consumption_charts.js' %}"></script>
+<script>
+  var user_total_consumptions = JSON.parse('{{ user_total_consumptions|safe }}');
+  var user_average_consumptions = JSON.parse('{{ user_average_consumptions|safe }}');
+  show_user_consumption_charts(user_total_consumptions, user_average_consumptions);
+</script>
 {% endblock %}

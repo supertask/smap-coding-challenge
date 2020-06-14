@@ -8,16 +8,15 @@ from multiprocessing import Pool
 
 import pandas as pd
 from tqdm import tqdm
-
 from django.conf import settings
 from django.core import exceptions
 from django.core.management.base import BaseCommand
-from django.db.models import Avg, Sum
-from django.db.models.functions import TruncMonth, TruncDay
 from django.utils.timezone import datetime
 
-from consumption.models import User, ElectricityConsumption, ElectricityConsumptionDayAggregation
-from consumption.util import Util
+from consumption.models import User
+from consumption.models import ElectricityConsumption
+from consumption.models import EConsumptionDayAggregation
+from consumption.models import UserEConsumptionDayAggregation
 
 def read_csv_concurrently(user):
     csv_path = os.path.join(settings.ELECTRICITY_CONSUMPTION_CSV_DIR, str(user.user_id) + '.csv')
@@ -40,25 +39,28 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         """Imports user and consumption csv into database(db.sqlite3)
         """
-
         if settings.DEBUG:
             User.objects.all().delete()
             ElectricityConsumption.objects.all().delete()
+            UserEConsumptionDayAggregation.objects.all().delete()
+            EConsumptionDayAggregation.objects.all().delete()
 
         print("Reading a user csv file...")
         self.import_user_csv()
         print("Putting electricity consumption csv files into DB...")
         self.import_electricity_consumption_csv()
 
-        print("Aggregating total and average electricity consumptions...")
-        self.calc_consumptions()
+        print("Aggregating total and average electricity consumptions on each user...")
+        UserEConsumptionDayAggregation.calc_consumptions()
+        print("Aggregating total and average electricity consumptions for all users...")
+        EConsumptionDayAggregation.calc_consumptions()
         print("Successfully imported all csv files!")
 
     def import_user_csv(self):
         """Import user csv.
         """
         if not os.path.exists(settings.USER_CSV_PATH):
-            #TODO(Tasuku): Should have logging
+            # TODO(Tasuku): Should have logging
             print('ERROR: the filename "%s" does not exist.' % settings.USER_CSV_PATH, file=sys.stderr)
             sys.exit(settings.EXIT_FAILURE)
 
@@ -78,7 +80,8 @@ class Command(BaseCommand):
             with Pool(os.cpu_count()) as pool:
                 data_frame = pd.concat(pool.map(read_csv_concurrently, users[i : i + self.concurrent_exec_users_len]))
 
-            #NOTE(Tasuku): Both of creating the list bellow and saving the list on DB(bulk_create) will take a time to exec
+            # OPTIMIZE(Tasuku): Consider RAM when num of users is increased. And test huge datasets over and over
+            # NOTE(Tasuku): Both of creating the list bellow and saving the list on DB(bulk_create) will take a time to exec
             e_consumptions = [
                 ElectricityConsumption(
                     datetime = pytz.utc.localize(
@@ -89,24 +92,4 @@ class Command(BaseCommand):
                 for row in data_frame.to_dict('records')
             ]
             ElectricityConsumption.objects.bulk_create(e_consumptions)
-
-    def calc_consumptions(self):
-        """Calc and put total and average electricity consumption into DB."""
-
-        #
-        # OPTIMIZE(Tasuku): Consider multiprocessing and RAM when num of users is increased
-        #
-        # NOTE(Tasuku): a statement on SQLite
-        # SELECT day, SUM(consumption), AVG(consumption) FROM(
-        #    SELECT DATE(datetime) as day, consumption FROM consumption_electricityconsumption
-        # ) GROUP BY day;
-        day_consumption_aggregation = ElectricityConsumption.objects.annotate(day=TruncDay('datetime'))\
-                .values('day').annotate(day_total=Sum('consumption')).annotate(day_average=Avg('consumption'))
-        data_frame = pd.DataFrame.from_records(day_consumption_aggregation)
-        ElectricityConsumptionDayAggregation.objects.bulk_create(
-            [
-                ElectricityConsumptionDayAggregation(day=row['day'], day_total=row['day_total'], day_average=row['day_average'])
-                for row in data_frame.to_dict('records')
-            ]
-        )
 
