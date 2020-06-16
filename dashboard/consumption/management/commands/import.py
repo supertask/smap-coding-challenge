@@ -39,6 +39,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         """Imports user and consumption csv into database(db.sqlite3)
         """
+
         if settings.DEBUG:
             User.objects.all().delete()
             ElectricityConsumption.objects.all().delete()
