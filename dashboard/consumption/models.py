@@ -12,6 +12,9 @@ from django.db.models.functions import TruncDay
 from django.db.models import Avg
 from django.db.models import Sum
 
+# NOTE(Tasuku): Implementation of Django fields to understand "Django variable <-> Python variable"
+# https://github.com/django/django/blob/master/django/forms/fields.py
+
 class User(models.Model):
     """This table is imported from data/user_data.csv, basically."""
 
@@ -54,7 +57,7 @@ class UserEConsumptionDayAggregation(models.Model):
         # NOTE(Tasuku): a statement on SQLite
         # SELECT day, user_id, SUM(consumption) as day_total, AVG(consumption) as day_average FROM(
         #     SELECT DATE(datetime) as day, user_id, consumption FROM consumption_electricityconsumption
-        # )  WHERE user_id=3000   GROUP BY day, user_id;
+        # ) GROUP BY day, user_id;
         day_consumption_aggregation = ElectricityConsumption.objects.annotate(day=TruncDay('datetime'))\
                 .values('day', 'user_id').annotate(day_total=Sum('consumption')).annotate(day_average=Avg('consumption'))
         data_frame = pd.DataFrame.from_records(day_consumption_aggregation)

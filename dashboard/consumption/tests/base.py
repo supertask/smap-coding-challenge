@@ -5,6 +5,7 @@ import sys
 import random
 import string
 import pytz
+import pandas as pd
 from enum import IntEnum
 from enum import auto
 from decimal import Decimal
@@ -21,15 +22,6 @@ from consumption.models import EConsumptionDayAggregation
 from consumption.models import UserEConsumptionDayAggregation
 from consumption.util import Util 
 
-
-class VariableType(IntEnum):
-    """A variable type of Django model"""
-    BIG_INTEGER = 0
-    STRING = auto()
-    DATE = auto()
-    DATETIME = auto()
-    DECIMAL = auto()
-
 class TestBase(TestCase):
     """Base class for test.
 
@@ -43,34 +35,8 @@ class TestBase(TestCase):
     def setUp(self):
         pass
     
-    def test_unique(self):
-        print("Testing functions which make unique variables...")
-        self.assertTrue(self.is_unique_variables(self.get_unique_ids(1000)) )
-        self.assertTrue(self.is_unique_variables(self.get_random_unique_datetimes(1000)) )
-
-        print("-" * 10)
-
-
     def is_unique_variables(self, variables):
         return (len(variables) == len(set(variables)) )
-
-    def get_random_value(self, ignore_types = []):
-        variable_types = list(VariableType)
-        for ignore_type in ignore_types:
-            variable_types.remove(ignore_type)
-        v_type = random.choice(variable_types)
-        if v_type == VariableType.BIG_INTEGER: 
-            return self.get_random_big_integer()
-        elif v_type == VariableType.STRING: 
-            return self.get_random_string()
-        elif v_type == VariableType.DATE: 
-            return self.get_random_date()
-        elif v_type == VariableType.DATETIME: 
-            return self.get_custom_random_datetime()
-        elif v_type == VariableType.DECIMAL: 
-            return self.get_random_decimal()
-
-        raise NotImplementedError('Check out if you have enough "if" or "elif" statements.')
 
     def get_random_decimal(self, integer_part_len=4, decimal_part_len=1):
         v = 10 ** integer_part_len - 1
@@ -81,14 +47,6 @@ class TestBase(TestCase):
             self.big_integer_range['min'],
             self.big_integer_range['max']
         )
-
-    def get_invalid_random_big_integer(self):
-        rand = random.choice([0, 1])
-        if rand == 0:
-            return random.randint(self.big_integer_range['max'] + 1, self.big_integer_range['max'] + 1000)
-        elif rand == 1:
-            return random.randint(self.big_integer_range['min'] - 1000, self.big_integer_range['min'] - 1)
-        raise NotImplementedError('Check out if you have enough "if" or "elif" statements.')
 
     def get_random_string(self, max_length=4):
         random_string = ""
@@ -112,13 +70,11 @@ class TestBase(TestCase):
         end = start + timedelta(days=365 * years)
         return start + (end - start) * rand
 
-    def get_random_unique_datetimes(self, max_sample_len):
+    def get_random_unique_datetimes(self, max_sample_len, min_year = 1900, max_year = 2100):
         if max_sample_len <= 0:
             sys.exit(settings.EXIT_FAILURE)
-        start_t = int(datetime.timestamp(
-            timezone.make_aware(datetime(1900, 1, 1, 00, 00, 00), timezone=settings.TZ)
-        ))
-        end_t = int(datetime.timestamp(datetime.now()) )
+        start_t = int( datetime.timestamp( timezone.make_aware(datetime(min_year, 1, 1, 00, 00, 00), timezone=settings.TZ) ))
+        end_t = int( datetime.timestamp( timezone.make_aware(datetime(max_year, 1, 1, 00, 00, 00), timezone=settings.TZ) ))
         rand_timestamps = random.sample(
             range(start_t, end_t, int((end_t - start_t) / max_sample_len / 10)),
             max_sample_len
@@ -137,3 +93,23 @@ class TestBase(TestCase):
             ),
             max_sample_len
         )
+
+    def get_random_user_dataframe(self, num_of_rows):
+        user_ids = self.get_unique_ids(num_of_rows)
+        user_table = {
+            'user_id': user_ids, 'area': [], 'tariff': []
+        }
+        for _ in range(len(user_ids)):
+            user_table['area'].append(self.get_random_string())
+            user_table['tariff'].append(self.get_random_string())
+        return pd.DataFrame(user_table)
+
+    def get_random_consumption_dataframe(self, num_of_rows, user_id):
+        unique_datetimes = self.get_random_unique_datetimes(num_of_rows, 2020, 2021)
+        consumption_table = {
+            'datetime': unique_datetimes, 'consumption': [], 'user_id': []
+        }
+        for _ in range(len(unique_datetimes)):
+            consumption_table['consumption'].append(self.get_random_decimal())
+            consumption_table['user_id'].append(user_id)
+        return pd.DataFrame(consumption_table)
