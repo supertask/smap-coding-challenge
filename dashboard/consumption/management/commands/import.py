@@ -33,7 +33,7 @@ class Command(BaseCommand):
         super(Command, self).__init__()
 
         # NOTE(Tasuku): If this command is executed as a batch or
-        # the machine has enough CPU cores and RAM, you shoud increate this rate.
+        # the machine has enough CPU cores and RAM, you shoud increate this rate as much as you can.
         self.concurrent_exec_users_len = 10
 
     def handle(self, *args, **options):
@@ -85,7 +85,7 @@ class Command(BaseCommand):
             # NOTE(Tasuku): Both of creating the list bellow and saving the list on DB(bulk_create) will take a time to exec
             e_consumptions = [
                 ElectricityConsumption(
-                    datetime = pytz.utc.localize(
+                    datetime = pytz.timezone(settings.TIME_ZONE).localize(
                         datetime.strptime(row['datetime'], settings.CSV_DATETIME_FORMAT)
                     ),
                     consumption = Decimal(row['consumption']), user_id = int(row['user_id'])

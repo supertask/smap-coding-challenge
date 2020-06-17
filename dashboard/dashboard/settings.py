@@ -12,7 +12,9 @@ https://docs.djangoproject.com/en/1.11/ref/settings/
 
 import sys
 import os
-import shutil
+import pytz
+
+from django.utils import timezone
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -123,6 +125,8 @@ USE_L10N = True
 
 USE_TZ = True
 
+TZ = pytz.timezone(TIME_ZONE)
+timezone.activate(TZ)
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.11/howto/static-files/

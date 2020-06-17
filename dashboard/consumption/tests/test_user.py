@@ -31,12 +31,14 @@ class TestUser(TestBase):
         """Test users who is expected to have no errors.
         """
         print("Testing users whose parameters are safe...")
-        for user_id in self.get_unique_user_ids(100):
+        for user_id in self.get_unique_ids(100):
             self.save_expected_user(user_id)
         
         User.objects.all().delete()
         print("Testing many users whose parameters are safe with bulk_create...")
         self.save_many_expected_users()
+
+        print("-" * 10)
 
 
     def test_error_users(self):
@@ -53,25 +55,28 @@ class TestUser(TestBase):
         print("Testing users who have an invalid parameter...")
         for _ in range(10000):
             self.make_invalid_user()
+        print("-" * 10)
 
 
     def make_wrong_type_user(self):
         """Make a user which will cause ValueError.
 
-        The random user is made by "baker.make" and has random parameters.
-        A wrong parameter is also put into User class.
+        The random user is made by functions on BaseTest class and has random parameters.
+        One of the random parameters is wrong type parameter. This test detects it.
         """
         # NOTE(Tasuku): string(e.g. 'area' or 'tariff') doesn't make errors even the variable is wrong
         column = random.choice([UserColumn.USER_ID])
         caused_error = False
         if column == UserColumn.USER_ID:
             try:
-                baker.make(User,
-                    user_id = self.get_random_value(ignore_types = [VariableType.BIG_INTEGER, VariableType.DECIMAL])
+                user = User(
+                    user_id = self.get_random_value(ignore_types = [VariableType.BIG_INTEGER, VariableType.DECIMAL]),
+                    area = self.get_random_string(), tariff = self.get_random_string()
                 )
+                user.save()
             except Exception:
                 caused_error = True
-            self.assertEqual(caused_error, True)
+            self.assertTrue(caused_error)
             return
 
         raise NotImplementedError('Check out if you have enough "if" or "elif" statements')
@@ -80,18 +85,22 @@ class TestUser(TestBase):
     def make_invalid_user(self):
         """Make a user which will cause invalid error.
 
-        The random user is made by "baker.make" and has random parameters.
-        An invalid parameter (e.g. too big integer) is also put into User class.
+        The random user is made by functions on BaseTest class and has random parameters.
+        One of the random parameters is invalid type parameter. This test detects it.
         """
         # NOTE(Tasuku): string(e.g. 'area' or 'tariff') doesn't make errors even the variable is invalid
         column = random.choice([UserColumn.USER_ID])
         caused_error = False
         if column == UserColumn.USER_ID:
             try:
-                baker.make(User, user_id=self.get_invalid_random_big_integer())
+                user = User(
+                    user_id=self.get_invalid_random_big_integer(),
+                    area = self.get_random_string(), tariff = self.get_random_string()
+                )
+                user.save()
             except transaction.TransactionManagementError as e:
                 caused_error = True
-            self.assertEqual(caused_error, True)
+            self.assertTrue(caused_error)
 
 
     def save_expected_user(self, user_id):
@@ -104,14 +113,14 @@ class TestUser(TestBase):
             user = list(User.objects.filter(user_id=user_id))[0]
         except Exception:
             caused_error = True
-        self.assertEqual(caused_error, False)
+        self.assertFalse(caused_error)
         self.assertEqual(user.area, area)
         self.assertEqual(user.tariff, tariff)
 
     def save_many_expected_users(self):
         users = []
         users_dict = {} #For test
-        for user_id in self.get_unique_user_ids(50000):
+        for user_id in self.get_unique_ids(50000):
             users_dict[user_id] = { 'area': self.get_random_string(), 'tariff': self.get_random_string() }
             users.append( User(user_id=user_id, area=users_dict[user_id]['area'], tariff=users_dict[user_id]['tariff']))
         User.objects.bulk_create(users)
@@ -121,14 +130,3 @@ class TestUser(TestBase):
             self.assertEqual(user.tariff, users_dict[user.user_id]['tariff'])
 
     
-    def get_unique_user_ids(self, max_user_len):
-        if max_user_len <= 0:
-            sys.exit(settings.EXIT_FAILURE)
-        return random.sample(
-            range(
-                0,
-                self.big_integer_range['max'],
-                int(self.big_integer_range['max'] / max_user_len / 10 )
-            ),
-            max_user_len
-        )
