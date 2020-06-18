@@ -38,6 +38,9 @@ class TestBase(TestCase):
     def is_unique_variables(self, variables):
         return (len(variables) == len(set(variables)) )
 
+    #
+    # TODO(Tasuku): Test random functions bellow with Chi-squared test(e.g. scipy.stats.chisquare)
+    #
     def get_random_decimal(self, integer_part_len=4, decimal_part_len=1):
         v = 10 ** integer_part_len - 1
         return round(Decimal(random.randrange(-v, v)), 1 )
@@ -70,11 +73,15 @@ class TestBase(TestCase):
         end = start + timedelta(days=365 * years)
         return start + (end - start) * rand
 
-    def get_random_unique_datetimes(self, max_sample_len, min_year = 1900, max_year = 2100):
+    def get_random_unique_datetimes(self,
+            max_sample_len,
+            min_datetime = datetime(1900, 1, 1, 00, 00, 00),
+            max_datetime = datetime(2100, 1, 1, 00, 00, 00)
+    ):
         if max_sample_len <= 0:
             sys.exit(settings.EXIT_FAILURE)
-        start_t = int( datetime.timestamp( timezone.make_aware(datetime(min_year, 1, 1, 00, 00, 00), timezone=settings.TZ) ))
-        end_t = int( datetime.timestamp( timezone.make_aware(datetime(max_year, 1, 1, 00, 00, 00), timezone=settings.TZ) ))
+        start_t = int( datetime.timestamp( timezone.make_aware(min_datetime, timezone=settings.TZ) ))
+        end_t = int( datetime.timestamp( timezone.make_aware(max_datetime, timezone=settings.TZ) ))
         rand_timestamps = random.sample(
             range(start_t, end_t, int((end_t - start_t) / max_sample_len / 10)),
             max_sample_len
@@ -105,7 +112,11 @@ class TestBase(TestCase):
         return pd.DataFrame(user_table)
 
     def get_random_consumption_dataframe(self, num_of_rows, user_id):
-        unique_datetimes = self.get_random_unique_datetimes(num_of_rows, 2020, 2021)
+        unique_datetimes = self.get_random_unique_datetimes(
+            num_of_rows,
+            datetime(2020, 1, 1, 00, 00, 00),
+            datetime(2020, 2, 1, 00, 00, 00)
+        )
         consumption_table = {
             'datetime': unique_datetimes, 'consumption': [], 'user_id': []
         }
