@@ -24,7 +24,7 @@ class TestAggregations(TestBase):
         User.objects.all().delete()
         ElectricityConsumption.objects.all().delete()
 
-    def test_aggregations(self):
+    def test_datasets(self):
         print("Making random users...")
         user_ids = self.make_user_datasets(5)
 

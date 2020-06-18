@@ -17,7 +17,7 @@ python manage.py migrate
 
 ### 2. Import datasets
 ```
-python manage.py import
+python manage.py importer
 ```
 
 ### 3. Run a server
