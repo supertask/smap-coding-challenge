@@ -38,17 +38,17 @@ test:
 #
 # Ordered test commands by priority
 #
-test_1:
-	${TARGET} test ${APP_NAME}.tests.test_aggregations
-
-test_2:
+test1:
 	${TARGET} test ${APP_NAME}.tests.test_importer
 
-test_3:
+test2:
+	${TARGET} test ${APP_NAME}.tests.test_aggregations
+
+test3:
 	${TARGET} test ${APP_NAME}.tests.test_user
 
-test_4:
+test4:
 	${TARGET} test ${APP_NAME}.tests.test_consumption
 
-test_5:
-	${TARGET} test ${APP_NAME}.tests.test_unique
+test5:
+	${TARGET} test ${APP_NAME}.tests.test_extended_test_case

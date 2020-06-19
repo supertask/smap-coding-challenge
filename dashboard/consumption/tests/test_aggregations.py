@@ -17,20 +17,29 @@ from consumption.models import User
 from consumption.models import ElectricityConsumption
 from consumption.models import EConsumptionDayAggregation
 from consumption.models import UserEConsumptionDayAggregation
-from consumption.tests.base import TestBase
+from consumption.tests.extended_test_case import ExtendedTestCase
 
-class TestAggregations(TestBase):
+class TestAggregations(ExtendedTestCase):
+    NUM_OF_USERS = 3
+    NUM_OF_CONSUMPTIONS = 100000
+
+    # NOTE: If NUM_OF_CONSUMPTIONS or NUM_OF_USERS are increased, decrease this rate
+    # Why this rate is needed is that SQLite's Real has no Decimal while Django has Decimal.
+    # SQLite's Real is like 8 bite double variable. Therefore, when "num of calculation is increased",
+    # a calculation error will be increased
+    RELATIVE_TOLERANCE = 1e-8
+
     def setUp(self):
         User.objects.all().delete()
         ElectricityConsumption.objects.all().delete()
 
     def test_datasets(self):
         print("Making random users...")
-        user_ids = self.make_user_datasets(5)
+        user_ids = self.make_user_datasets(self.NUM_OF_USERS)
 
         print("Making random consumptions...")
         for user_id in user_ids:
-            data_frame = self.get_random_consumption_dataframe(10000, user_id)
+            data_frame = self.get_random_consumption_dataframe(self.NUM_OF_CONSUMPTIONS, user_id)
 
             ElectricityConsumption.objects.bulk_create(
                 [ ElectricityConsumption(**row) for row in data_frame.to_dict('records') ]
@@ -55,13 +64,19 @@ class TestAggregations(TestBase):
         rows = cursor.fetchall()
         testing_rows = EConsumptionDayAggregation.objects.order_by('day').all().values()
         
+        i = 0
         for row, testing_row in zip(rows, list(testing_rows)):
             self.assertEqual(row[0], testing_row['day'].strftime('%Y-%m-%d'))
 
-            # WARNING(Tasuku): I guess the way of rounding between Django's decimal & Sql decimal is different. So I used isclose
-            # This might be a hint, https://github.com/django/django/blob/master/django/forms/fields.py
-            self.assertTrue(math.isclose(Decimal(row[1]), testing_row['day_total'], rel_tol=1e-9) )
-            self.assertTrue(math.isclose(Decimal(row[2]), testing_row['day_average'], rel_tol=1e-9) )
+            if not math.isclose(Decimal(row[2]), testing_row['day_average'], rel_tol=RELATIVE_TOLERANCE):
+                print(i, Decimal(row[2]), testing_row['day_average'])
+                print(i, row[2], testing_row['day_average'])
+
+            # WARNING(Tasuku): If you encountered an error here due to 
+            # too much increased NUM_OF_CONSUMPTIONS or NUM_OF_USERS, then decrease RELATIVE_TOLERANCE
+            self.assertTrue(math.isclose(Decimal(row[1]), testing_row['day_total'], rel_tol=RELATIVE_TOLERANCE) )
+            self.assertTrue(math.isclose(Decimal(row[2]), testing_row['day_average'], rel_tol=RELATIVE_TOLERANCE) )
+            i+=1
 
     def compare_user_aggregation(self):
         """Compare a result of SQLite with a result of UserEConsumptionDayAggregation.calc_consumptions()
@@ -75,13 +90,20 @@ class TestAggregations(TestBase):
         rows = cursor.fetchall()
         testing_rows = UserEConsumptionDayAggregation.objects.order_by('user_id', 'day').all().values()
 
+        i = 0
         for row, testing_row in zip(rows, list(testing_rows)):
             self.assertEqual(row[0], testing_row['user_id'])
             self.assertEqual(row[1], testing_row['day'].strftime('%Y-%m-%d'))
 
-            # WARNING(Tasuku): I guess the way of rounding between Django's decimal & Sql decimal is different. So I used isclose
-            self.assertTrue(math.isclose(Decimal(row[2]), testing_row['day_total'], rel_tol=1e-9) )
-            self.assertTrue(math.isclose(Decimal(row[3]), testing_row['day_average'], rel_tol=1e-9) )
+            if not math.isclose(Decimal(row[3]), testing_row['day_average'], rel_tol=RELATIVE_TOLERANCE):
+                print(i, Decimal(row[3]), testing_row['day_average'])
+                print(i, row[3], testing_row['day_average'])
+
+            # WARNING(Tasuku): If you encountered an error here due to 
+            # too much increased NUM_OF_CONSUMPTIONS or NUM_OF_USERS, then decrease RELATIVE_TOLERANCE
+            self.assertTrue(math.isclose(Decimal(row[2]), testing_row['day_total'], rel_tol=RELATIVE_TOLERANCE) )
+            self.assertTrue(math.isclose(Decimal(row[3]), testing_row['day_average'], rel_tol=RELATIVE_TOLERANCE) )
+            i+=1
 
     def make_user_datasets(self, num_of_users):
         data_frame = self.get_random_user_dataframe(num_of_users)

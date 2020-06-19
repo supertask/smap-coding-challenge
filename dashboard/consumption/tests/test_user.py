@@ -12,9 +12,9 @@ from django.conf import settings
 from django.db import transaction
 
 from consumption.models import User
-from consumption.tests.base import TestBase
+from consumption.tests.extended_test_case import ExtendedTestCase
 
-class TestUser(TestBase):
+class UserTester(ExtendedTestCase):
     def setUp(self):
         pass
 

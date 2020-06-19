@@ -6,3 +6,5 @@ djangorestframework==3.9.1
 django-webpack-loader==0.6.0
 pandas==0.24.2
 tqdm==4.46.1
+numpy==1.18.5
+scipy==1.4.1

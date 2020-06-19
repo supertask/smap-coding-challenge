@@ -12,9 +12,9 @@ from django.conf import settings
 from django.db import transaction
 
 from consumption.models import ElectricityConsumption
-from consumption.tests.base import TestBase
+from consumption.tests.extended_test_case import ExtendedTestCase
 
-class TestConsumption(TestBase):
+class ConsumptionTester(ExtendedTestCase):
     def setUp(self):
         pass
 
@@ -22,8 +22,8 @@ class TestConsumption(TestBase):
         """Test consumptions which are expected to have no errors.
         """
         print("Testing consumptions whose parameters are safe...")
-        for unique_datetime in self.get_random_unique_datetimes(1000):
-            self.save_expected_consumption(unique_datetime)
+        for current_datetime in self.get_consumption_datetimes(1000):
+            self.save_expected_consumption(current_datetime)
         
         ElectricityConsumption.objects.all().delete()
         print("Testing many consumptions whose parameters are safe with bulk_create...")
@@ -32,34 +32,34 @@ class TestConsumption(TestBase):
         print("-" * 10)
 
 
-    def save_expected_consumption(self, unique_datetime):
+    def save_expected_consumption(self, current_datetime):
         consumption = self.get_random_decimal()
         user_id = self.get_random_big_integer()
         try:
             caused_error = False
-            e_consumption = ElectricityConsumption(datetime=unique_datetime, consumption=consumption, user_id=user_id)
+            e_consumption = ElectricityConsumption(datetime=current_datetime, consumption=consumption, user_id=user_id)
             e_consumption.save()
-            e_consumption = list(ElectricityConsumption.objects.filter(datetime=unique_datetime))[0]
+            e_consumption = list(ElectricityConsumption.objects.filter(datetime=current_datetime))[0]
         except Exception:
             caused_error = True
         self.assertFalse(caused_error)
-        self.assertEqual(e_consumption.datetime, unique_datetime)
+        self.assertEqual(e_consumption.datetime, current_datetime)
         self.assertEqual(e_consumption.consumption, consumption)
         self.assertEqual(e_consumption.user_id, user_id)
 
     def save_many_expected_consumptions(self):
         e_consumptions = []
         e_consumptions_dict = {}
-        for unique_datetime in self.get_random_unique_datetimes(50000):
-            e_consumptions_dict[unique_datetime] = {
+        for current_datetime in self.get_consumption_datetimes(50000):
+            e_consumptions_dict[current_datetime] = {
                 'consumption': self.get_random_decimal(),
                 'user_id': self.get_random_big_integer()
             }
             e_consumptions.append(
                 ElectricityConsumption(
-                    datetime = unique_datetime,
-                    consumption = e_consumptions_dict[unique_datetime]['consumption'],
-                    user_id = e_consumptions_dict[unique_datetime]['user_id'],
+                    datetime = current_datetime,
+                    consumption = e_consumptions_dict[current_datetime]['consumption'],
+                    user_id = e_consumptions_dict[current_datetime]['user_id'],
                 )
             )
         ElectricityConsumption.objects.bulk_create(e_consumptions)

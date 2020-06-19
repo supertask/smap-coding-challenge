@@ -12,8 +12,14 @@ from django.db.models.functions import TruncDay
 from django.db.models import Avg
 from django.db.models import Sum
 
-# NOTE(Tasuku): Implementation of Django fields to understand "Django variable <-> Python variable"
+#
+# NOTE(Tasuku):
+# Implementation of Django fields to understand "Django variable <-> Python variable"
 # https://github.com/django/django/blob/master/django/forms/fields.py
+#
+# Outbounded decimal will cause a unintelligible error,
+# https://code.djangoproject.com/ticket/26963
+#
 
 class User(models.Model):
     """This table is imported from data/user_data.csv, basically."""
@@ -43,7 +49,7 @@ class UserEConsumptionDayAggregation(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     day = models.DateField()
     day_total = models.DecimalField(
-        max_digits= 5 + math.ceil(math.log10(settings.COMSUMPTION_RECORD_PER_DAY)),
+        max_digits= 5 + math.ceil(math.log10(settings.CONSUMPTION_RECORD_PER_DAY)),
         decimal_places = 1) # NOTE: e.g. 999999.9
     day_average = models.DecimalField(max_digits=14, decimal_places=10) # NOTE: e.g. 9999.9999999999
 
@@ -76,7 +82,7 @@ class EConsumptionDayAggregation(models.Model):
     """Total and average consumptions per day are aggregated into this table for all users."""
     day = models.DateField()
     day_total = models.DecimalField(
-        max_digits= 5 + math.ceil(math.log10(settings.ESTIMATED_NUM_OF_USERS * settings.COMSUMPTION_RECORD_PER_DAY)),
+        max_digits= 5 + math.ceil(math.log10(settings.ESTIMATED_NUM_OF_USERS * settings.CONSUMPTION_RECORD_PER_DAY)),
         decimal_places = 1) # NOTE: e.g. 9999999999999999.9
     day_average = models.DecimalField(max_digits=14, decimal_places=10) # NOTE: e.g. 9999.9999999999
 

@@ -16,8 +16,6 @@ from consumption.management.commands.importer import Command
 
 class TestImporter(TestAggregations):
 
-    NUM_OF_USERS = 5
-    NUM_OF_CONSUMPTIONS = 100000
     USER_CSV_PATH = os.path.join(settings.BASE_DIR, './consumption/tests/data/user_data.csv')
     ELECTRICITY_CONSUMPTION_CSV_DIR = os.path.join(settings.BASE_DIR, './consumption/tests/data/consumption/')
 
@@ -30,7 +28,7 @@ class TestImporter(TestAggregations):
         os.makedirs(user_csv_dir)
 
         #
-        # Write csv files
+        # Make csv files
         #
         print("Making test csv files")
         data_frame = self.get_random_user_dataframe(self.NUM_OF_USERS)
@@ -41,7 +39,6 @@ class TestImporter(TestAggregations):
         if not os.path.exists(self.ELECTRICITY_CONSUMPTION_CSV_DIR):
             os.makedirs(self.ELECTRICITY_CONSUMPTION_CSV_DIR)
         for user_id in user_ids:
-            #print(user_id)
             data_frame = self.get_random_consumption_dataframe(self.NUM_OF_CONSUMPTIONS, user_id)
             data_frame['datetime'] = data_frame['datetime'].astype(str).str[:-6] #Remove timezone
             del data_frame['user_id'] #Remove the column, user_id

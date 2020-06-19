@@ -22,15 +22,15 @@ from consumption.models import EConsumptionDayAggregation
 from consumption.models import UserEConsumptionDayAggregation
 from consumption.util import Util 
 
-class TestBase(TestCase):
-    """Base class for test.
+class ExtendedTestCase(TestCase):
+    """ExtendedTestCase is a class which expanded from TestCase for the consumption app.
 
     Basically this class includes functions which make random values.
     The type of random values are only enums on VariableType at this time.
     """
-    random_letters = string.ascii_letters + string.digits #NOTE: [a-z]+[A-Z]+[0-9]+
-    minute_range = [0, 30] #NOTE: 0 mins or 30 mins
-    big_integer_range = {'min': - (2 ** 63 - 1), 'max': 2 ** 63 - 1 }
+    RANDOM_LETTERS = string.ascii_letters + string.digits #NOTE: [a-z]+[A-Z]+[0-9]+
+    MINUTE_RANGE = [minute for minute in range(0, 60, settings.MINUTE_PER_ONE_CONSUMPTION_RECORD)] #NOTE: e.g. [0, 30]
+    BIG_INTEGER_RANGE = {'min': - (2 ** 63 - 1), 'max': 2 ** 63 - 1 }
 
     def setUp(self):
         pass
@@ -38,28 +38,28 @@ class TestBase(TestCase):
     def is_unique_variables(self, variables):
         return (len(variables) == len(set(variables)) )
 
-    #
-    # TODO(Tasuku): Test random functions bellow with Chi-squared test(e.g. scipy.stats.chisquare)
-    #
     def get_random_decimal(self, integer_part_len=4, decimal_part_len=1):
         v = 10 ** integer_part_len - 1
-        return round(Decimal(random.randrange(-v, v)), 1 )
+        return round(Decimal(random.randrange(-v, v)), decimal_part_len )
 
     def get_random_big_integer(self, additional_range={'min': 0, 'max': 0}):
         return random.randint(
-            self.big_integer_range['min'],
-            self.big_integer_range['max']
+            self.BIG_INTEGER_RANGE['min'],
+            self.BIG_INTEGER_RANGE['max']
         )
 
+    #
+    # TODO(Tasuku): Test random functions bellow with Chi-squared test(e.g. scipy.stats.chisquare)
+    #
     def get_random_string(self, max_length=4):
         random_string = ""
         for i in range(max_length):
-            random_string += random.choice(self.random_letters)
+            random_string += random.choice(self.RANDOM_LETTERS)
         return random_string
     
     def get_custom_random_datetime(self, min_year = 1900, max_year = 2100):
         dt = self.get_random_datetime(min_year, max_year)
-        dt = dt.replace(minute = random.choice(self.minute_range), second = 0, microsecond = 0)
+        dt = dt.replace(minute = random.choice(self.MINUTE_RANGE), second = 0, microsecond = 0)
         return dt
 
     def get_random_date(self, min_year = 1900, max_year = 2100):
@@ -73,21 +73,14 @@ class TestBase(TestCase):
         end = start + timedelta(days=365 * years)
         return start + (end - start) * rand
 
-    def get_random_unique_datetimes(self,
-            max_sample_len,
-            min_datetime = datetime(1900, 1, 1, 00, 00, 00),
-            max_datetime = datetime(2100, 1, 1, 00, 00, 00)
-    ):
-        if max_sample_len <= 0:
-            sys.exit(settings.EXIT_FAILURE)
-        start_t = int( datetime.timestamp( timezone.make_aware(min_datetime, timezone=settings.TZ) ))
-        end_t = int( datetime.timestamp( timezone.make_aware(max_datetime, timezone=settings.TZ) ))
-        rand_timestamps = random.sample(
-            range(start_t, end_t, int((end_t - start_t) / max_sample_len / 10)),
-            max_sample_len
-        )
-        rand_datetimes = [datetime.fromtimestamp(t, tz=pytz.timezone(settings.TIME_ZONE)) for t in rand_timestamps]
-        return rand_datetimes
+    def get_consumption_datetimes(self, max_sample_len):
+        start = self.get_custom_random_datetime()
+        consumption_datetimes = []
+        for i in range(max_sample_len):
+            consumption_datetimes.append(
+                start + timedelta(minutes = settings.MINUTE_PER_ONE_CONSUMPTION_RECORD * i)
+            )
+        return consumption_datetimes
 
     def get_unique_ids(self, max_sample_len):
         if max_sample_len <= 0:
@@ -95,8 +88,8 @@ class TestBase(TestCase):
         return random.sample(
             range(
                 0,
-                self.big_integer_range['max'],
-                int(self.big_integer_range['max'] / max_sample_len / 10 )
+                self.BIG_INTEGER_RANGE['max'],
+                int(self.BIG_INTEGER_RANGE['max'] / max_sample_len / 10 )
             ),
             max_sample_len
         )
@@ -112,15 +105,11 @@ class TestBase(TestCase):
         return pd.DataFrame(user_table)
 
     def get_random_consumption_dataframe(self, num_of_rows, user_id):
-        unique_datetimes = self.get_random_unique_datetimes(
-            num_of_rows,
-            datetime(2020, 1, 1, 00, 00, 00),
-            datetime(2020, 2, 1, 00, 00, 00)
-        )
+        datetimes = self.get_consumption_datetimes(num_of_rows)
         consumption_table = {
-            'datetime': unique_datetimes, 'consumption': [], 'user_id': []
+            'datetime': datetimes, 'consumption': [], 'user_id': []
         }
-        for _ in range(len(unique_datetimes)):
+        for _ in range(len(datetimes)):
             consumption_table['consumption'].append(self.get_random_decimal())
             consumption_table['user_id'].append(user_id)
         return pd.DataFrame(consumption_table)
