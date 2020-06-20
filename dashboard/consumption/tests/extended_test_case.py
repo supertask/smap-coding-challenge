@@ -9,10 +9,10 @@ import pandas as pd
 from enum import IntEnum
 from enum import auto
 from decimal import Decimal
+
 from django.utils import timezone
 from django.utils.timezone import datetime
 from django.utils.timezone import timedelta
-
 from django.test import TestCase
 from django.conf import settings
 
@@ -34,44 +34,35 @@ class ExtendedTestCase(TestCase):
 
     def setUp(self):
         pass
-    
-    def is_unique_variables(self, variables):
-        return (len(variables) == len(set(variables)) )
 
     def get_random_decimal(self, integer_part_len=4, decimal_part_len=1):
         v = 10 ** integer_part_len - 1
         return round(Decimal(random.randrange(-v, v)), decimal_part_len )
 
-    def get_random_big_integer(self, additional_range={'min': 0, 'max': 0}):
+    # TODO(Tasuku): Test a random function bellow with Chi-squared test(e.g. scipy.stats.chisquare)
+    def get_random_big_integer(self):
         return random.randint(
             self.BIG_INTEGER_RANGE['min'],
             self.BIG_INTEGER_RANGE['max']
         )
 
-    #
-    # TODO(Tasuku): Test random functions bellow with Chi-squared test(e.g. scipy.stats.chisquare)
-    #
-    def get_random_string(self, max_length=4):
-        random_string = ""
-        for i in range(max_length):
-            random_string += random.choice(self.RANDOM_LETTERS)
-        return random_string
-    
+    def get_random_datetime(self, min_year = 1900, max_year = 2100):
+        start = timezone.make_aware(datetime(min_year, 1, 1, 00, 00, 00), timezone=settings.TZ)
+        years = max_year - min_year + 1
+        end = start + timedelta(days=365 * years)
+        return start + (end - start) * random.random()
+
     def get_custom_random_datetime(self, min_year = 1900, max_year = 2100):
         dt = self.get_random_datetime(min_year, max_year)
         dt = dt.replace(minute = random.choice(self.MINUTE_RANGE), second = 0, microsecond = 0)
         return dt
 
-    def get_random_date(self, min_year = 1900, max_year = 2100):
-        dt = self.get_random_datetime(min_year, max_year)
-        dt = dt.replace(hour = 0, minute = 0, second = 0, microsecond = 0)
-        return dt
-
-    def get_random_datetime(self, min_year = 1900, max_year = 2100, rand = random.random()):
-        start = timezone.make_aware(datetime(min_year, 1, 1, 00, 00, 00), timezone=settings.TZ)
-        years = max_year - min_year + 1
-        end = start + timedelta(days=365 * years)
-        return start + (end - start) * rand
+    # TODO(Tasuku): Test a random function bellow with Chi-squared test(e.g. scipy.stats.chisquare)
+    def get_random_string(self, max_length=4):
+        random_string = ""
+        for i in range(max_length):
+            random_string += random.choice(self.RANDOM_LETTERS)
+        return random_string
 
     def get_consumption_datetimes(self, max_sample_len):
         start = self.get_custom_random_datetime()
@@ -94,6 +85,9 @@ class ExtendedTestCase(TestCase):
             max_sample_len
         )
 
+    #
+    # TODO(Tasuku): Test these
+    #
     def get_random_user_dataframe(self, num_of_rows):
         user_ids = self.get_unique_ids(num_of_rows)
         user_table = {

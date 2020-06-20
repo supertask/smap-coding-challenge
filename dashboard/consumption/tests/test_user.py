@@ -21,17 +21,18 @@ class UserTester(ExtendedTestCase):
     def test_expected_users(self):
         """Test users who is expected to have no errors.
         """
+        print()
         print("Testing users whose parameters are safe...")
         for user_id in self.get_unique_ids(100):
-            self.save_expected_user(user_id)
+            self.store_expected_user(user_id)
         
         User.objects.all().delete()
         print("Testing many users whose parameters are safe with bulk_create...")
-        self.save_many_expected_users()
+        self.store_many_expected_users()
 
         print("-" * 10)
 
-    def save_expected_user(self, user_id):
+    def store_expected_user(self, user_id):
         area = self.get_random_string()
         tariff = self.get_random_string()
         try:
@@ -45,7 +46,7 @@ class UserTester(ExtendedTestCase):
         self.assertEqual(user.area, area)
         self.assertEqual(user.tariff, tariff)
 
-    def save_many_expected_users(self):
+    def store_many_expected_users(self):
         users = []
         users_dict = {} #For test
         for user_id in self.get_unique_ids(50000):

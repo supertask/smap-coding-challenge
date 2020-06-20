@@ -30,6 +30,7 @@ class TestImporter(TestAggregations):
         #
         # Make csv files
         #
+        print()
         print("Making test csv files")
         data_frame = self.get_random_user_dataframe(self.NUM_OF_USERS)
         user_ids = list(data_frame['user_id'])
@@ -40,14 +41,14 @@ class TestImporter(TestAggregations):
             os.makedirs(self.ELECTRICITY_CONSUMPTION_CSV_DIR)
         for user_id in user_ids:
             data_frame = self.get_random_consumption_dataframe(self.NUM_OF_CONSUMPTIONS, user_id)
-            data_frame['datetime'] = data_frame['datetime'].astype(str).str[:-6] #Remove timezone
-            del data_frame['user_id'] #Remove the column, user_id
+            data_frame['datetime'] = data_frame['datetime'].astype(str).str[:-6] #Removes timezone
+            del data_frame['user_id'] # Removes the column, user_id
             data_frame.to_csv(
                 os.path.join(self.ELECTRICITY_CONSUMPTION_CSV_DIR, str(user_id) + '.csv'),
                 index=False
             )
 
     def test_datasets(self):
-        Command().handle()
+        Command().handle() # Importer's command
         self.compare_all_aggregation()
         self.compare_user_aggregation()

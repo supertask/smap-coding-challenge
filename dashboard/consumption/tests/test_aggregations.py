@@ -26,7 +26,7 @@ class TestAggregations(ExtendedTestCase):
     # NOTE: If NUM_OF_CONSUMPTIONS or NUM_OF_USERS are increased, decrease this rate
     # Why this rate is needed is that SQLite's Real has no Decimal while Django has Decimal.
     # SQLite's Real is like 8 bite double variable. Therefore, when "num of calculation is increased",
-    # a calculation error will be increased
+    # a calculation error will increase
     RELATIVE_TOLERANCE = 1e-8
 
     def setUp(self):
@@ -34,6 +34,7 @@ class TestAggregations(ExtendedTestCase):
         ElectricityConsumption.objects.all().delete()
 
     def test_datasets(self):
+        print()
         print("Making random users...")
         user_ids = self.make_user_datasets(self.NUM_OF_USERS)
 
@@ -64,19 +65,17 @@ class TestAggregations(ExtendedTestCase):
         rows = cursor.fetchall()
         testing_rows = EConsumptionDayAggregation.objects.order_by('day').all().values()
         
-        i = 0
         for row, testing_row in zip(rows, list(testing_rows)):
             self.assertEqual(row[0], testing_row['day'].strftime('%Y-%m-%d'))
 
-            if not math.isclose(Decimal(row[2]), testing_row['day_average'], rel_tol=RELATIVE_TOLERANCE):
-                print(i, Decimal(row[2]), testing_row['day_average'])
-                print(i, row[2], testing_row['day_average'])
+            if not math.isclose(Decimal(row[2]), testing_row['day_average'], rel_tol=self.RELATIVE_TOLERANCE):
+                print(Decimal(row[2]), testing_row['day_average'])
+                print(row[2], testing_row['day_average'])
 
             # WARNING(Tasuku): If you encountered an error here due to 
             # too much increased NUM_OF_CONSUMPTIONS or NUM_OF_USERS, then decrease RELATIVE_TOLERANCE
-            self.assertTrue(math.isclose(Decimal(row[1]), testing_row['day_total'], rel_tol=RELATIVE_TOLERANCE) )
-            self.assertTrue(math.isclose(Decimal(row[2]), testing_row['day_average'], rel_tol=RELATIVE_TOLERANCE) )
-            i+=1
+            self.assertTrue(math.isclose(Decimal(row[1]), testing_row['day_total'], rel_tol=self.RELATIVE_TOLERANCE) )
+            self.assertTrue(math.isclose(Decimal(row[2]), testing_row['day_average'], rel_tol=self.RELATIVE_TOLERANCE) )
 
     def compare_user_aggregation(self):
         """Compare a result of SQLite with a result of UserEConsumptionDayAggregation.calc_consumptions()
@@ -90,20 +89,18 @@ class TestAggregations(ExtendedTestCase):
         rows = cursor.fetchall()
         testing_rows = UserEConsumptionDayAggregation.objects.order_by('user_id', 'day').all().values()
 
-        i = 0
         for row, testing_row in zip(rows, list(testing_rows)):
             self.assertEqual(row[0], testing_row['user_id'])
             self.assertEqual(row[1], testing_row['day'].strftime('%Y-%m-%d'))
 
-            if not math.isclose(Decimal(row[3]), testing_row['day_average'], rel_tol=RELATIVE_TOLERANCE):
-                print(i, Decimal(row[3]), testing_row['day_average'])
-                print(i, row[3], testing_row['day_average'])
+            if not math.isclose(Decimal(row[3]), testing_row['day_average'], rel_tol=self.RELATIVE_TOLERANCE):
+                print(Decimal(row[3]), testing_row['day_average'])
+                print(row[3], testing_row['day_average'])
 
             # WARNING(Tasuku): If you encountered an error here due to 
             # too much increased NUM_OF_CONSUMPTIONS or NUM_OF_USERS, then decrease RELATIVE_TOLERANCE
-            self.assertTrue(math.isclose(Decimal(row[2]), testing_row['day_total'], rel_tol=RELATIVE_TOLERANCE) )
-            self.assertTrue(math.isclose(Decimal(row[3]), testing_row['day_average'], rel_tol=RELATIVE_TOLERANCE) )
-            i+=1
+            self.assertTrue(math.isclose(Decimal(row[2]), testing_row['day_total'], rel_tol=self.RELATIVE_TOLERANCE) )
+            self.assertTrue(math.isclose(Decimal(row[3]), testing_row['day_average'], rel_tol=self.RELATIVE_TOLERANCE) )
 
     def make_user_datasets(self, num_of_users):
         data_frame = self.get_random_user_dataframe(num_of_users)

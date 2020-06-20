@@ -21,18 +21,19 @@ class ConsumptionTester(ExtendedTestCase):
     def test_expected_consumptions(self):
         """Test consumptions which are expected to have no errors.
         """
+        print()
         print("Testing consumptions whose parameters are safe...")
         for current_datetime in self.get_consumption_datetimes(1000):
-            self.save_expected_consumption(current_datetime)
+            self.store_expected_consumption(current_datetime)
         
         ElectricityConsumption.objects.all().delete()
         print("Testing many consumptions whose parameters are safe with bulk_create...")
-        self.save_many_expected_consumptions()
+        self.store_many_expected_consumptions()
 
         print("-" * 10)
 
 
-    def save_expected_consumption(self, current_datetime):
+    def store_expected_consumption(self, current_datetime):
         consumption = self.get_random_decimal()
         user_id = self.get_random_big_integer()
         try:
@@ -47,7 +48,7 @@ class ConsumptionTester(ExtendedTestCase):
         self.assertEqual(e_consumption.consumption, consumption)
         self.assertEqual(e_consumption.user_id, user_id)
 
-    def save_many_expected_consumptions(self):
+    def store_many_expected_consumptions(self):
         e_consumptions = []
         e_consumptions_dict = {}
         for current_datetime in self.get_consumption_datetimes(50000):
