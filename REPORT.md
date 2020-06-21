@@ -55,10 +55,10 @@ However a machine I have has low level CPU(Intel i5, only 2 cores). Therefore I 
 I tested importer and models with random datasets for some of the reasons like bellow.
 
 - Whether the datasets are stored with Django's model correctly?
-	- When you changed variable types or any other things, you can make sure if the data is correctly stored.
+	- When you changed properties on models, you can make if the data is correctly stored.
 - Whether a result of aggregation is correct?
 	- When you changed the way to aggregate, you can make sure if it is correct by comparing Django's results with SQLite's results.
-- Whether a random datasets are correct?
+- Whether a random datasets are actually correct?
 	- Sometimes, random functions I created for test might make incomprehensible errors or bugs on the program.
 	- At this challenge I encountered some bugs caused by a random function (after I modified a little feature). I think it is helpful.
 
@@ -78,7 +78,7 @@ Decimal('100000.0')
 0.09999999999999998
 ```
 
-Second, in decimal I am able to arrange a number of digits like bellow.
+Second, in decimal it is possible to arrange a number of digits like bellow.
 
 ```
 day_total = models.DecimalField(
@@ -91,9 +91,9 @@ day_average = models.DecimalField(max_digits=14, decimal_places=10) # NOTE: e.g.
 ### Random functions I created for testing are safe?
 In short, I am not sure yet.
 
-Because I couldn't figure out, which distribution Python's random functions are using? (maybe, normal distribution) and which significance level I should define for this test? (probably 0.01 or 0.05 in general)
+Because I couldn't figure out, what types of distribution Python's random functions are using? (maybe, normal distribution) and which significance level I should define for this test? (probably 0.01 or 0.05 in general)
 
-I used `scipy.stats.chisquare` to know about a variation in a result of a random function. If the variation is too much, the random functions might have a bug which I didn't expect. 
+I used `scipy.stats.chisquare` to know about a variation in values of a random function. If the variation in the values is too much, the random functions might have a bug which I didn't expect. 
 
 At this time I setup a significance level to 0.01 and distribution to normal distribution when I use stats.chisquare by following some of articles. Because I haven't tried a test againt a "random function" before.
 
@@ -119,7 +119,7 @@ NUM_OF_USERS = 10
 NUM_OF_CONSUMPTIONS = 10000
 ```
 
-You might have to decrease `RELATIVE_TOLERANCE = 1e-8`. If you didn't, it causes an error at codes like bellow.
+You might have to decrease `RELATIVE_TOLERANCE = 1e-8`. If you didn't, it causes an assertation error at codes like bellow.
 
 ```
 self.assertTrue(math.isclose(Decimal(row[1]), testing_row['day_total'], rel_tol=self.RELATIVE_TOLERANCE) )
@@ -134,14 +134,14 @@ Because SQLite's Real has no Decimal while Django has Decimal field. SQLite's Re
 ### GPU optimization
 I sometimes use HLSL / GLSL as a GPU calculation language which make around 100 times faster than CPU calculation although it has some limitation.
 
-However I haven't used a GPU based calcuration library with Python yet. And also, the calcuration library might not work on Windows/Linux (I prefer and have NVIDIA), means that reviewers of this challenge may not be able to execute. So I will try it by my own.
+However I haven't used a GPU accelerated calcuration library with Python yet. And also, the calcuration library might not work on MacOSX (I prefer and have NVIDIA), means that reviewers of this challenge may not be able to execute. So I will try it by my own.
 
-And plus, I found a GPU accelerated SQL and dataframe library which can run in Python. ([BlazingSQL (GPU accelerated SQL)](https://blazingsql.com/) and [cuDF (GPU DataFrames)](https://github.com/rapidsai/cudf).) These tools will make much more faster storing and calcuration at this project as well.
+And plus, I found a GPU accelerated SQL and dataframe library which can run in Python. ([BlazingSQL (GPU accelerated SQL)](https://blazingsql.com/) and [cuDF (GPU DataFrames)](https://github.com/rapidsai/cudf)) These tools will make much more faster storing and calcuration at this project as well.
 
 
 ### Compare a muiti-processing program with a single-processing program. Then, optimize it with the result
 
-As I mentions, a machine I have has low level CPU(Intel i5, only 2 cores) and user datasets are only 60 (menas O(10^1)). Therefore I couldn't see obvious improvements that much.
+As I mentioned, a machine I have has low level CPU(Intel i5, only 2 cores) and user datasets are only 60 (menas O(10^1)). Therefore I couldn't see obvious improvements that much.
 
 Look at some codes on `./dashboard/consumption/management/commands/importer.py` 
 
@@ -150,9 +150,9 @@ e_consumptions = [ElectricityConsumption(...) for row in data_frame.to_dict('rec
 ElectricityConsumption.objects.bulk_create(e_consumptions) # Took about 13 seconds
 ```
 
-Each statement took about 13 seconds to execute when I measured. I am thinking that bulk_create() has alreadly used multi-processing because it has batch_size property. So I can't optimize any thing at this statement.
+Each statement took about 13 seconds to execute when I measured. I am thinking that `bulk_create()` has alreadly used multi-processing because it has `batch_size` property. So I think I can't optimize any thing at this statement.
 
-However the part `e_consumptions = [ElectricityConsumption(...) ...]` is able to use multi-processing by dividing dataframe. I have alreadly tried it once. unfortunately I couldn't see obvious improvements by this doing that because of my PC spec (probably).  So I should compare before and after in the future.
+However the part `e_consumptions = [ElectricityConsumption(...) ...]` is able to use multi-processing by dividing dataframe. I have alreadly tried it once. Unfortunately I couldn't see obvious improvements by doing this because of my PC spec (probably).  So I should compare before and after and optimize for the statement in the future.
 
 ### Others
 
