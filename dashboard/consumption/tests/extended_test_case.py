@@ -6,8 +6,6 @@ import random
 import string
 import pytz
 import pandas as pd
-from enum import IntEnum
-from enum import auto
 from decimal import Decimal
 
 from django.utils import timezone
@@ -16,17 +14,10 @@ from django.utils.timezone import timedelta
 from django.test import TestCase
 from django.conf import settings
 
-from consumption.models import User
-from consumption.models import ElectricityConsumption
-from consumption.models import EConsumptionDayAggregation
-from consumption.models import UserEConsumptionDayAggregation
-from consumption.util import Util 
-
 class ExtendedTestCase(TestCase):
     """ExtendedTestCase is a class which expanded from TestCase for the consumption app.
 
-    Basically this class includes functions which make random values.
-    The type of random values are only enums on VariableType at this time.
+    Basically this class includes custom random functions for testing.
     """
     RANDOM_LETTERS = string.ascii_letters + string.digits #NOTE: [a-z]+[A-Z]+[0-9]+
     MINUTE_RANGE = [minute for minute in range(0, 60, settings.MINUTE_PER_ONE_CONSUMPTION_RECORD)] #NOTE: e.g. [0, 30]
@@ -39,7 +30,6 @@ class ExtendedTestCase(TestCase):
         v = 10 ** integer_part_len - 1
         return round(Decimal(random.randrange(-v, v)), decimal_part_len )
 
-    # TODO(Tasuku): Test a random function bellow with Chi-squared test(e.g. scipy.stats.chisquare)
     def get_random_big_integer(self):
         return random.randint(
             self.BIG_INTEGER_RANGE['min'],

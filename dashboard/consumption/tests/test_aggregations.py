@@ -2,15 +2,11 @@
 from __future__ import unicode_literals
 
 import sys
-import random
 import math 
-from enum import IntEnum
-from enum import auto
 import decimal
 from decimal import Decimal
 
 from tqdm import tqdm
-from django.test import TestCase
 from django.db import connection
 
 from consumption.models import User
@@ -20,8 +16,8 @@ from consumption.models import UserEConsumptionDayAggregation
 from consumption.tests.extended_test_case import ExtendedTestCase
 
 class TestAggregations(ExtendedTestCase):
-    NUM_OF_USERS = 3
-    NUM_OF_CONSUMPTIONS = 100000
+    NUM_OF_USERS = 10
+    NUM_OF_CONSUMPTIONS = 10000
 
     # NOTE: If NUM_OF_CONSUMPTIONS or NUM_OF_USERS are increased, decrease this rate
     # Why this rate is needed is that SQLite's Real has no Decimal while Django has Decimal.

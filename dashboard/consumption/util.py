@@ -5,7 +5,7 @@ class Util:
     def remap(self, value, from1, to1, from2, to2):
         """Remap value with (a,b) -> (c, d)
 
-        It usually used for normalization.
+        It is usually used for normalization.
         example:
             value = 250
             from1, to1 = (0, 1000)

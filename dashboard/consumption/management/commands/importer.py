@@ -19,7 +19,7 @@ from consumption.models import EConsumptionDayAggregation
 from consumption.models import UserEConsumptionDayAggregation
 
 def read_csv_concurrently(user):
-    csv_path = os.path.join(settings.ELECTRICITY_CONSUMPTION_CSV_DIR, str(user.user_id) + '.csv')
+    csv_path = os.path.join(Command.electricity_consumption_csv_dir, str(user.user_id) + '.csv')
     if not os.path.exists(csv_path):
         print('WARNING: the filename "%s" does not exist.' % csv_path)
     df = pd.read_csv(csv_path)
@@ -28,6 +28,8 @@ def read_csv_concurrently(user):
 
 class Command(BaseCommand):
     help = 'Try on "python manage.py import"'
+    user_csv_path = settings.USER_CSV_PATH
+    electricity_consumption_csv_dir = settings.ELECTRICITY_CONSUMPTION_CSV_DIR
 
     def __init__(self):
         super(Command, self).__init__()
@@ -39,7 +41,6 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         """Imports user and consumption csv into database(db.sqlite3)
         """
-
         if settings.DEBUG:
             User.objects.all().delete()
             ElectricityConsumption.objects.all().delete()
@@ -58,14 +59,14 @@ class Command(BaseCommand):
         print("Successfully imported all csv files!")
 
     def import_user_csv(self):
-        """Import user csv.
+        """Import user csv into DB.
         """
-        if not os.path.exists(settings.USER_CSV_PATH):
+        if not os.path.exists(Command.user_csv_path):
             # TODO(Tasuku): Should have logging
-            print('ERROR: the filename "%s" does not exist.' % settings.USER_CSV_PATH, file=sys.stderr)
+            print('ERROR: the filename "%s" does not exist.' % Command.user_csv_path, file=sys.stderr)
             sys.exit(settings.EXIT_FAILURE)
 
-        data_frame = pd.read_csv(settings.USER_CSV_PATH, sep=settings.CSV_SEPARATION_CHAR)
+        data_frame = pd.read_csv(Command.user_csv_path, sep=settings.CSV_SEPARATION_CHAR)
         User.objects.bulk_create(
             [
                 User(user_id=int(row['id']), area=row['area'], tariff=row['tariff'])
@@ -74,7 +75,10 @@ class Command(BaseCommand):
         )
 
     def import_electricity_consumption_csv(self):
-        """Import electricity consumption csv.
+        """Import electricity consumption csv into DB.
+
+        A number of consumption datasets will increase significantly when users are scaled to 9 billion.
+        Therefore multi-processing is needed.
         """
         users = User.objects.all()
         for i in tqdm(range(0, len(users), self.concurrent_exec_users_len)):
@@ -93,4 +97,3 @@ class Command(BaseCommand):
                 for row in data_frame.to_dict('records')
             ]
             ElectricityConsumption.objects.bulk_create(e_consumptions)
-

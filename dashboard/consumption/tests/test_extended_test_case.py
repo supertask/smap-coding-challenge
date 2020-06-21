@@ -15,6 +15,10 @@ class ExtendedTestCaseTester(ExtendedTestCase):
     SIGNIFICANCE_LEVEL = 0.01
     NUM_OF_DIVISION = 10
 
+    GAUSSIAN_DISTRIBUTION = -3
+    #BINOMIAL_DISTRIBUTION = -2
+    #PEARSON_TYPE_DISTRIBUTION = -2
+
     def test_unique(self):
         """Test for get_unique_ids() & get_consumption_datetimes() of ExtendedTestCase"""
 
@@ -28,11 +32,13 @@ class ExtendedTestCaseTester(ExtendedTestCase):
         print()
         print("Testing random decimal...")
 
+        # Parameters
         integer_part_len = 4
         num_of_test = 10000
         max_decimal = 10 ** integer_part_len
         min_decimal = -max_decimal
 
+        # Calc observed frequencies
         observed_frequencies_dict = {}
         for _ in range(num_of_test):
             value = self.get_random_decimal(integer_part_len) #-9999.9 ~ 9999.9
@@ -43,16 +49,18 @@ class ExtendedTestCaseTester(ExtendedTestCase):
                 value, min_decimal, max_decimal,
                 observed_frequencies_dict
             )
-        self.assertLess(self.SIGNIFICANCE_LEVEL, self.get_p_value(observed_frequencies_dict, num_of_test))
+        self.assertLess(self.SIGNIFICANCE_LEVEL, self.get_p_value(observed_frequencies_dict, num_of_test, self.GAUSSIAN_DISTRIBUTION))
 
     def test_random_big_integer(self):
         print()
         print("Testing random decimal...")
 
-        num_of_test = 10000
+        # Parameters
+        num_of_test = 1000000
         min_integer = self.BIG_INTEGER_RANGE['min']
         max_integer = self.BIG_INTEGER_RANGE['max']
 
+        # Calc observed frequencies
         observed_frequencies_dict = {}
         for _ in range(num_of_test):
             value = self.get_random_big_integer()
@@ -63,18 +71,20 @@ class ExtendedTestCaseTester(ExtendedTestCase):
                 value, min_integer, max_integer,
                 observed_frequencies_dict
             )
-        self.assertLess(self.SIGNIFICANCE_LEVEL, self.get_p_value(observed_frequencies_dict, num_of_test))
+        self.assertLess(self.SIGNIFICANCE_LEVEL, self.get_p_value(observed_frequencies_dict, num_of_test, self.GAUSSIAN_DISTRIBUTION))
 
     def test_random_datetime(self):
         print()
         print("Testing random datetime...")
 
+        # Parameters
         num_of_test = 10000
         min_year = 1900
         max_year = 2100
         start_t = int(timezone.make_aware(datetime(min_year, 1, 1, 00, 00, 00), timezone=settings.TZ).timestamp())
         end_t = int(timezone.make_aware(datetime(max_year, 1, 1, 00, 00, 00), timezone=settings.TZ).timestamp())
 
+        # Calc observed frequencies
         observed_frequencies_dict = {}
         for _ in range(num_of_test):
             rand_datetime = self.get_random_datetime(min_year, max_year)
@@ -85,18 +95,20 @@ class ExtendedTestCaseTester(ExtendedTestCase):
                 rand_datetime.timestamp(), start_t, end_t,
                 observed_frequencies_dict
             )
-        self.assertLess(self.SIGNIFICANCE_LEVEL, self.get_p_value(observed_frequencies_dict, num_of_test))
+        self.assertLess(self.SIGNIFICANCE_LEVEL, self.get_p_value(observed_frequencies_dict, num_of_test, self.GAUSSIAN_DISTRIBUTION))
 
     def test_custom_random_datetime(self):
         print()
         print("Testing custom random datetime...")
 
+        # Parameters
         num_of_test = 10000
         min_year = 1900
         max_year = 2100
         start_t = int(timezone.make_aware(datetime(min_year, 1, 1, 00, 00, 00), timezone=settings.TZ).timestamp())
         end_t = int(timezone.make_aware(datetime(max_year, 1, 1, 00, 00, 00), timezone=settings.TZ).timestamp())
 
+        # Calc observed frequencies
         observed_frequencies_dict = {}
         for _ in range(num_of_test):
             rand_datetime = self.get_custom_random_datetime(min_year, max_year)
@@ -110,9 +122,11 @@ class ExtendedTestCaseTester(ExtendedTestCase):
                 rand_datetime.timestamp(), start_t, end_t,
                 observed_frequencies_dict
             )
-        self.assertLess(self.SIGNIFICANCE_LEVEL, self.get_p_value(observed_frequencies_dict, num_of_test))
+        self.assertLess(self.SIGNIFICANCE_LEVEL, self.get_p_value(observed_frequencies_dict, num_of_test, self.GAUSSIAN_DISTRIBUTION))
 
-
+    #
+    # TODO(Tasuku): Write comments on these functions
+    #
     def count_observed_frequencies(self, value, min_value, max_value, observed_frequencies_dict):
         pattern_per_division = int(float(max_value - min_value) / self.NUM_OF_DIVISION)
         for d in range(min_value, max_value, pattern_per_division): #range(-10000, 10000, 1000)
@@ -124,10 +138,10 @@ class ExtendedTestCaseTester(ExtendedTestCase):
                 break
         return observed_frequencies_dict
 
-    def get_p_value(self, observed_frequencies_dict, num_of_test):
+    def get_p_value(self, observed_frequencies_dict, num_of_test, distribution):
         observed_frequencies = list(observed_frequencies_dict.values())
         expected_frequencies = [ int(num_of_test / self.NUM_OF_DIVISION) for _ in range(len(observed_frequencies))]
-        _, p_value = stats.chisquare(f_obs=observed_frequencies, f_exp=expected_frequencies)
+        _, p_value = stats.chisquare(f_obs=observed_frequencies, f_exp=expected_frequencies, ddof=distribution)
         print("Observed frequencies: %s" % observed_frequencies)
         print("Expected frequencies: %s" % expected_frequencies)
         print("P-value: %s" % p_value)

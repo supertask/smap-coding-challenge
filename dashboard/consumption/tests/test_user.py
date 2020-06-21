@@ -2,14 +2,8 @@
 from __future__ import unicode_literals
 
 import sys
-import random
-from enum import IntEnum
-from enum import auto
 
-from django.test import TestCase
-from django.core import exceptions
 from django.conf import settings
-from django.db import transaction
 
 from consumption.models import User
 from consumption.tests.extended_test_case import ExtendedTestCase
