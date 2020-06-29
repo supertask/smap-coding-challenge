@@ -1,7 +1,57 @@
 {% extends 'consumption/layout.html' %}
+{% load static %}
 
 {% block content %}
+<div class="container-fluid">
+  <h1>Aggregation of electricity consumption for all users</h1>
 
-<h1>{{message}}</h1>
+  <div class="row">
+    <div class="col-md-6">
+        <canvas id="total_consumption_chart"></canvas>
+    </div>
+    <div class="col-md-6">
+        <canvas id="average_consumption_chart"></canvas>
+    </div>
+  </div>
 
+  <h2 class="mt-6">Users</h2>
+  <div class="row overflow-auto" style="max-height: 500px;">
+    <div class="col-md-12">
+      <table class="table table-dark table-hover table-bordered table-striped">
+        <thead>
+          <tr class="d-flex">
+            <th class="col-md-1">{{ header.0 }}</th>
+            <th class="col-md-3">{{ header.1 }}</th>
+            <th class="col-md-3">{{ header.2 }}</th>
+            <th class="col-md-5 text-right">{{ header.3 }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for user in users %}
+          <tr class="d-flex">
+            <th class="col-md-1">{{ forloop.counter0 }}</th>
+            <td class="col-md-3">{{ user.area }}</td>
+            <td class="col-md-3">{{ user.tariff }}</td>
+            <td class="col-md-5 text-right">
+              <button onclick="location.href='./detail/{{ user.user_id }}'" type="button" class="btn btn-primary rounded-pill" >More detail</button>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>     
+</div>
+{% endblock %}
+
+{% block custom_script %}
+<script src="{% static 'js/base_line_chart_settings.js' %}"></script>
+<script>
+    var total_consumptions = JSON.parse('{{ total_consumptions|safe }}');
+    var average_consumptions = JSON.parse('{{ average_consumptions|safe }}');
+    create_chart(total_consumptions, $("#total_consumption_chart"), is_total=true,
+        color='229, 106, 167', label = 'Total electricity consumption' );
+    create_chart(average_consumptions, $("#average_consumption_chart"), is_total=false,
+        color='135, 206, 251', label = 'Average electricity consumption' );
+</script>
 {% endblock %}

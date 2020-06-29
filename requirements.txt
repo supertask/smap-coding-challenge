@@ -1,6 +1,10 @@
-Django==1.11.21
+#Django==1.11.21
+Django==2.2
 django-cors-headers==1.2.0
 django-oauth-toolkit==0.10.0
 djangorestframework==3.9.1
 django-webpack-loader==0.6.0
-
+pandas==0.24.2
+tqdm==4.46.1
+numpy==1.18.5
+scipy==1.4.1

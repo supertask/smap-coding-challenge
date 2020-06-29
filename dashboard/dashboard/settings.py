@@ -10,7 +10,11 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/1.11/ref/settings/
 """
 
+import sys
 import os
+import pytz
+
+from django.utils import timezone
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -77,8 +81,15 @@ WSGI_APPLICATION = 'dashboard.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'NAME': os.path.join(BASE_DIR, 'db.sqlite3')
     }
+    #'replica': {
+    #    'ENGINE': 'django.db.backends.sqlite3',
+    #    'NAME': os.path.join(BASE_DIR, 'test_db.sqlite3'),
+    #    'TEST': {
+    #        'MIRROR': 'default',
+    #    }
+    #}
 }
 
 
@@ -114,8 +125,35 @@ USE_L10N = True
 
 USE_TZ = True
 
+TZ = pytz.timezone(TIME_ZONE)
+timezone.activate(TZ)
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.11/howto/static-files/
 
-STATIC_URL = '/static/'
+STATIC_URL = '/assets/'
+
+STATICFILES_DIRS = (
+    os.path.join(BASE_DIR, STATIC_URL),
+)
+
+
+#
+# Exit status
+#
+EXIT_SUCCESS = 0
+EXIT_FAILURE = 1
+
+#
+# Consumption settings
+#
+USER_CSV_PATH = os.path.join(BASE_DIR, '../data/user_data.csv')
+ELECTRICITY_CONSUMPTION_CSV_DIR = os.path.join(BASE_DIR, '../data/consumption/')
+
+CSV_SEPARATION_CHAR = ','
+CSV_DATETIME_FORMAT = '%Y-%m-%d %H:%M:%S'
+
+MINUTE_PER_ONE_CONSUMPTION_RECORD = 30
+CONSUMPTION_RECORD_PER_DAY = 24 * 60 / MINUTE_PER_ONE_CONSUMPTION_RECORD #48
+
+ESTIMATED_NUM_OF_USERS = 10 ** 10 # NOTE(Tasuku): Considering around 9 billion people use in 2050
